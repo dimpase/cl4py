@@ -3,13 +3,21 @@ import io
 import os.path
 from urllib import request
 import tempfile
-from pkg_resources import resource_filename
 from collections import deque
 from .data import LispWrapper, Cons, Symbol, Quote
 from .reader import Readtable
 from .writer import lispify
 
 _DEFAULT_COMMAND = ('sbcl', '--script')
+
+try:
+    from pkg_resources import resource_filename
+    def _r_filename():
+        return resource_filename(__name__, 'py.lisp')
+except (ImportError):
+    from importlib.resources import files
+    def _r_filename():
+        return str(files(__name__).joinpath('py.lisp'))
 
 
 class Lisp:
@@ -19,7 +27,7 @@ class Lisp:
     def __init__(self, cmd=_DEFAULT_COMMAND, quicklisp=False, debug=False,
                  backtrace=True):
         command = list(cmd)
-        p = subprocess.Popen(command + [resource_filename(__name__, 'py.lisp')],
+        p = subprocess.Popen(command + [_r_filename()],
                              stdin = subprocess.PIPE,
                              stdout = subprocess.PIPE,
                              stderr = subprocess.PIPE,
